@@ -61,6 +61,8 @@ common:
   ray: 100
 
   # People
+  archer: 100
+  bard: 100
   bishop: 100
   captain: 100
   duke: 100
@@ -70,6 +72,7 @@ common:
   king: 100
   knight: 100
   nerd: 10
+  paladin: 100
   pirate: 100
   prince: 100
   princess: 100
@@ -77,12 +80,14 @@ common:
   queen: 100
   rockstar: 100
   sargeant: 100
+  scout: 100
   sniper: 100
   soldier: 100
   spy: 100
   tailor: 100
   tinker: 100
   warrior: 100
+  wizard: 100
 
   # Nature
   air: 100
