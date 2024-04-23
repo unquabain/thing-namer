@@ -1,0 +1,55 @@
+<!DOCTYPE html!>
+<html>
+  <head>
+    <meta content-type="text/html; charset=utf-8"/>
+    <title>Project Namer</title>
+    <meta property="og:title" content="Project Namer"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:description" content="Your Project is Called {{ .ProjectName }}"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&display=swap');
+* {
+  font-family: 'Tenor Sans', sans-serif;
+}
+body {
+  background-color: #EEEEEE;
+}
+#wrapper {
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+}
+#title {
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-bottom: 1ex;
+}
+#content-outer {
+  border-radius: 20px;
+  background-color: white;
+  box-shadow: 0 0 20px silver, 0 5px 5px silver;
+  padding: 20px;
+}
+#intro {
+  font-size: small;
+}
+#project-name {
+  font-size: x-large;
+  text-decoration: underline;
+}
+</style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="title">
+        <h1>Project Namer</h1>
+      </div>
+      <div id="content-outer">
+        <div id="content-inner">
+          <p id="intro">Your Project is Called</p>
+          <p id="project-name">{{ .ProjectName }}</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

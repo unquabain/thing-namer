@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: projectnamer-configfiles
+data:
+  token: 45b34892760775cca7da426e886a1242
+  teleport.yaml: |
+    version: v3
+    teleport:
+      nodename: localhost
+      data_dir: /var/lib/teleport
+      log:
+        output: stderr
+        severity: INFO
+        format:
+          output: text
+      ca_pin: ""
+      diag_addr: ""
+      auth_token: /etc/teleport/token
+      proxy_server: teleport.internalconnectedstore.com:443
+    auth_service:
+      enabled: "no"
+    ssh_service:
+      enabled: "no"
+    proxy_service:
+      enabled: "no"
+      https_keypairs: []
+      https_keypairs_reload_interval: 0s
+      acme: {}
+    app_service:
+      enabled: "yes"
+      debug_app: false
+      apps:
+      - name: project-namer
+        uri: http://localhost:9099
+        public_addr: "wizard-bacon.internalconnectedstore.com"
+        insecure_skip_verify: false
+        labels:
+          cluster: dev-east
+          namespace: test
+          env: dev-east-test
+          stage: experiment
+          author: bcf
+          audience: devs
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: projectnamer-datadir
+  annotations:
+    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      # TODO: How much does this actually need?
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: projectnamer-pod
+  labels:
+    app: projectnamer
+spec:
+  imagePullSecrets:
+    - name: private-docker-registry
+  volumes:
+    - name: configs
+      configMap:
+        name: projectnamer-configfiles
+    - name: datadir
+      persistentVolumeClaim:
+        claimName: projectnamer-datadir
+  containers:
+    - name: webserver
+      image: kube-registry.internalconnectedstore.com/projectnamer:v1.0.2
+      imagePullPolicy: Always
+      ports:
+        - containerPort: 9099
+    - name: teleportnode
+      image: public.ecr.aws/gravitational/teleport-distroless:14.0.1
+      volumeMounts:
+        - name: configs
+          mountPath: /etc/teleport
+          readOnly: true
+        - name: datadir
+          mountPath: /var/lib/teleport
