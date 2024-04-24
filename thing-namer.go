@@ -2,11 +2,15 @@ package main
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"math/rand"
 	"net/http"
+	"strings"
 
 	"github.com/Masterminds/sprig"
+	"github.com/lucasb-eyer/go-colorful"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	yaml "gopkg.in/yaml.v2"
@@ -19,39 +23,117 @@ var words []byte
 var indexRaw string
 var index = template.Must(template.New(`index`).Funcs(sprig.TxtFuncMap()).Parse(indexRaw))
 
-func projectName(wf WordFile) (string, error) {
+type RenderContext struct {
+	ProjectName       string `json:"projectName"`
+	Background        string `json:"-"`
+	ContentBackground string `json:"-"`
+	ContentShadow1    string `json:"-"`
+	ContentShadow2    string `json:"-"`
+	Title             string `json:"-"`
+	SubTitle          string `json:"-"`
+	IntroText         string `json:"intro"`
+	IntroColor        string `json:"-"`
+	OutroText         string `json:"outro"`
+	OutroColor        string `json:"-"`
+	ProjectNameColor  string `json:"-"`
+}
+
+var white, _ = colorful.Hex("#FFFFFF")
+var black, _ = colorful.Hex("#000000")
+
+var defaultContext = RenderContext{
+	Background:        `#EEEEEE`,
+	ContentBackground: `white`,
+	ContentShadow1:    `silver`,
+	ContentShadow2:    `silver`,
+	Title:             `black`,
+	SubTitle:          `black`,
+	IntroText:         `Your project is now called`,
+	IntroColor:        `black`,
+	OutroText:         `You're welcome!`,
+	OutroColor:        `black`,
+	ProjectNameColor:  `black`,
+}
+
+func createTheme(context *RenderContext) {
+	h, c, l := rand.Float64()*360, 0.3, 0.7
+	main := colorful.Hcl(h, c, l)
+	complement := colorful.Hcl(h+180.0, 0.6, 0.4)
+	context.Background = main.BlendLab(white, 0.75).Clamped().Hex()
+	context.ContentBackground = `white`
+	context.ContentShadow1 = main.BlendLab(white, 0.5).Clamped().Hex()
+	context.ContentShadow2 = main.Clamped().Hex()
+	context.Title = main.BlendLab(black, 0.2).Clamped().Hex()
+	context.SubTitle = context.ContentShadow2
+	context.IntroColor = complement.BlendLab(black, 0.6).Clamped().Hex()
+	context.OutroColor = context.Title
+	context.ProjectNameColor = complement.Clamped().Hex()
+}
+
+func (wf WordFile) createContext() RenderContext {
+	return RenderContext{
+		ProjectName: wf.projectName(),
+		IntroText:   wf.Choose(`intro`),
+		OutroText:   wf.Choose(`outro`),
+	}
+}
+
+func (wf WordFile) createThemedContext() RenderContext {
+	context := wf.createContext()
+	createTheme(&context)
+	return context
+}
+
+func (wf WordFile) projectName() string {
 	var adjective,
 		substantive string
-	adjective, err := wf.Choose(`common`, `adjective`)
-	if err != nil {
-		return ``, fmt.Errorf("could not pick an adjective: %w", err)
-	}
+	adjective = wf.Choose(`common`, `adjective`)
 	for {
-		substantive, err = wf.Choose(`common`, `substantive`)
-		if err != nil {
-			return ``, fmt.Errorf("could not pick an substantive: %w", err)
-		}
+		substantive = wf.Choose(`common`, `substantive`)
 		if substantive != adjective {
 			break
 		}
 	}
 	title := cases.Title(language.English)
-	return title.String(fmt.Sprintf(`%s %s`, adjective, substantive)), nil
+	return title.String(fmt.Sprintf(`%s %s`, adjective, substantive))
 }
 
-func (wf WordFile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	pn, err := projectName(wf)
-	if err != nil {
-		w.WriteHeader(500)
-		fmt.Fprintln(w, err.Error())
-		return
+func requestIsJSON(r *http.Request) bool {
+	if strings.HasSuffix(r.URL.Path, `.json`) {
+		return true
 	}
+	if r.Header.Get(`Accept`) == `application/json` {
+		return true
+	}
+	return false
+}
+
+func (wf WordFile) renderHTML(w http.ResponseWriter) {
 	w.Header().Add(`Content-Type`, `text/html`)
-	context := struct{ ProjectName string }{pn}
+	context := wf.createThemedContext()
 	if err := index.Execute(w, context); err != nil {
 		w.WriteHeader(500)
 		fmt.Fprintln(w, err.Error())
 		return
+	}
+}
+
+func (wf WordFile) renderJSON(w http.ResponseWriter) {
+
+	w.Header().Add(`Content-Type`, `application/json`)
+	context := wf.createContext()
+	if err := json.NewEncoder(w).Encode(context); err != nil {
+		w.WriteHeader(500)
+		fmt.Fprintln(w, err.Error())
+		return
+	}
+}
+
+func (wf WordFile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if requestIsJSON(r) {
+		wf.renderJSON(w)
+	} else {
+		wf.renderHTML(w)
 	}
 }
 
@@ -61,28 +143,4 @@ func main() {
 	yaml.Unmarshal(words, wf)
 	http.ListenAndServe(`:9099`, wf)
 
-	/*
-		var num int
-		flag.IntVar(&num, `n`, 1, `Number of project titles to output`)
-		flag.Parse()
-
-		if num == 1 {
-			pName, err := projectName(wf)
-			if err != nil {
-				fmt.Printf("Your project cannot be named: %v\n", err)
-				return
-			}
-			fmt.Printf("Your project is now called \"%s\"\n", pName)
-			return
-		}
-
-		for ; num > 0; num-- {
-			pName, err := projectName(wf)
-			if err != nil {
-				fmt.Printf("Your project cannot be named: %v\n", err)
-				return
-			}
-			fmt.Println(pName)
-		}
-	*/
 }

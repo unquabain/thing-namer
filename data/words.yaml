@@ -339,3 +339,32 @@ substantive:
   cry: 100
   shout: 100
 
+intro:
+  "Your project is now called": 100
+  "Congratulations! It's a": 50
+  "I hereby dub thy project": 50
+  "And so it came to pass that your project was yclept": 50
+  "How about calling it": 50
+  "Go forth,": 50
+  "Name:": 50
+  "You can't get better than": 50
+  "This is it!": 50
+  "Why wouldn't you call your project": 50
+  "Your project is totally": 10
+  "As it was foretold in the lays of old, your project is": 50
+  "As it happens, your project is": 50
+
+outro:
+  "You're welcome!": 50
+  "Or, you know, not.": 50
+  "Naturally.": 50
+  "Of course!": 50
+  "So mote it be.": 50
+  "As it was foretold.": 50
+  "How's that?": 10
+  "Refresh the page for another.": 50
+  "Refresh the page ... if you're feeling lucky!": 50
+  "It looks good on you.": 50
+  "Isn't that perfect?": 50
+  "So good!": 50
+

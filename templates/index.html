@@ -2,17 +2,17 @@
 <html>
   <head>
     <meta content-type="text/html; charset=utf-8"/>
-    <title>Project Namer</title>
-    <meta property="og:title" content="Project Namer"/>
+    <title>Wizard Bacon</title>
+    <meta property="og:title" content="Wizard Bacon"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:description" content="Your Project is Called {{ .ProjectName }}"/>
+    <meta property="og:description" content="The Epic Project Namer"/>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&display=swap');
 * {
   font-family: 'Tenor Sans', sans-serif;
 }
 body {
-  background-color: #EEEEEE;
+  background-color: {{ .Background }};
 }
 #wrapper {
   max-width: 450px;
@@ -24,32 +24,65 @@ body {
   padding-right: 20px;
   margin-bottom: 1ex;
 }
+#title h1 {
+  color: {{ .Title }}
+}
+#title h2 {
+  color: {{ .SubTitle }}
+}
 #content-outer {
   border-radius: 20px;
-  background-color: white;
-  box-shadow: 0 0 20px silver, 0 5px 5px silver;
+  background-color: {{ .ContentBackground }};
+  box-shadow: 0 0 20px {{ .ContentShadow1 }}, 0 5px 5px {{ .ContentShadow2 }};
   padding: 20px;
 }
 #intro {
   font-size: small;
+  color: {{ .IntroText }};
+}
+#outro {
+  font-size: small;
+  color: {{ .OutroText }};
 }
 #project-name {
-  font-size: x-large;
-  text-decoration: underline;
+  font-size: xx-large;
+  font-weight: bold;
+  color: {{ .ProjectNameColor }};
+}
+a.btn,
+a.btn:active,
+a.btn:visited {
+  color: {{ .OutroColor }};
 }
 </style>
   </head>
   <body>
     <div id="wrapper">
       <div id="title">
-        <h1>Project Namer</h1>
+        <h1>Wizard Bacon</h1>
+        <h2>The Epic Project Namer</h2>
       </div>
       <div id="content-outer">
         <div id="content-inner">
-          <p id="intro">Your Project is Called</p>
+          <p id="intro">{{ .IntroText }}</p>
           <p id="project-name">{{ .ProjectName }}</p>
+          <p id="outro">{{ .OutroText }}</p>
+          <a class="btn" href="#" id="another">Another!</a>
         </div>
       </div>
     </div>
+    <script type="text/javascript">
+      const another = document.getElementById('another')
+      const intro = document.getElementById('intro')
+      const outro = document.getElementById('outro')
+      const pname = document.getElementById('project-name')
+      another.onclick = async function() {
+        const r = await fetch('/index.json')
+        const j = await r.json()
+        intro.innerText = j.intro
+        outro.innerText = j.outro
+        pname.innerText = j.projectName
+      }
+    </script>
   </body>
 </html>
