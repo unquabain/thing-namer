@@ -1,0 +1,29 @@
+package wizardbacon
+
+import (
+  "net/http"
+  "encoding/json"
+  "fmt"
+)
+
+const endpoint = "{{ .Server }}/index.json"
+
+type Response struct {
+  ProjectName string `json:"projectName"`
+  Intro string `json:"intro"`
+  Outro string `json:"outro"`
+}
+
+func Fetch() (Response, error) {
+  var resp Response
+  if r, err := http.Get(endpoint); err != nil {
+    return resp, fmt.Errorf(`could not fetch Wizard Bacon response: %w`, err)
+  } else if err = json.NewDecoder(r.Body).Decode(&resp); err != nil {
+    return resp, fmt.Errorf(`could not understand Wizard Bacon response: %w`, err)
+  } else {
+    r.Body.Close()
+  }
+  return resp, nil
+}
+
+// vim: ft=gotexttmpl

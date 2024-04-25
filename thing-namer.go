@@ -23,6 +23,10 @@ var words []byte
 var indexRaw string
 var index = template.Must(template.New(`index`).Funcs(sprig.TxtFuncMap()).Parse(indexRaw))
 
+//go:embed templates/client.go.tmpl
+var goRaw string
+var goTmplt = template.Must(template.New(`go`).Funcs(sprig.TxtFuncMap()).Parse(goRaw))
+
 type RenderContext struct {
 	ProjectName       string `json:"projectName"`
 	Background        string `json:"-"`
@@ -108,6 +112,26 @@ func requestIsJSON(r *http.Request) bool {
 	return false
 }
 
+func requestIsGo(r *http.Request) bool {
+	if strings.HasSuffix(r.URL.Path, `.go`) {
+		return true
+	}
+	return false
+}
+
+func (WordFile) renderGo(w http.ResponseWriter, r *http.Request) {
+	proto := `http`
+	if r.TLS != nil {
+		proto = `https`
+	}
+	var renderContext = struct {
+		Server string
+	}{fmt.Sprintf(`%s://%s`, proto, r.Host)}
+	w.Header().Add(`Content-Type`, `text/plain`)
+	w.Header().Add(`Content-Disposition`, `attachment; filename="wizardbacon.go"`)
+	goTmplt.Execute(w, renderContext)
+}
+
 func (wf WordFile) renderHTML(w http.ResponseWriter) {
 	w.Header().Add(`Content-Type`, `text/html`)
 	context := wf.createThemedContext()
@@ -132,6 +156,8 @@ func (wf WordFile) renderJSON(w http.ResponseWriter) {
 func (wf WordFile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if requestIsJSON(r) {
 		wf.renderJSON(w)
+	} else if requestIsGo(r) {
+		wf.renderGo(w, r)
 	} else {
 		wf.renderHTML(w)
 	}
