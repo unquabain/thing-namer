@@ -124,6 +124,9 @@ func (WordFile) renderGo(w http.ResponseWriter, r *http.Request) {
 	if r.TLS != nil {
 		proto = `https`
 	}
+	if xfp := r.Header.Get(`X-Forwarded-Proto`); xfp != `` {
+		proto = xfp
+	}
 	var renderContext = struct {
 		Server string
 	}{fmt.Sprintf(`%s://%s`, proto, r.Host)}

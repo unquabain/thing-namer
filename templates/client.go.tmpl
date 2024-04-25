@@ -1,19 +1,27 @@
 package wizardbacon
 
 import (
-  "net/http"
   "encoding/json"
   "fmt"
+  "net/http"
 )
 
-const endpoint = "{{ .Server }}/index.json"
+const endpoint = "{{ .Server }}/api.json"
 
+// Response is the response from the Wizard Bacon server.
 type Response struct {
+  // ProjectName is the name of your new project. You're welcome
   ProjectName string `json:"projectName"`
+
+  // Intro is some randomized text used to present ProjectName in the UI.
   Intro string `json:"intro"`
+
+  // Outro is some randomized text used to present ProjectName in the UI.
   Outro string `json:"outro"`
 }
 
+// Fetch queries the server at {{ .Server }} and returns a response object
+// with the Project name and some other, randomized UI test.
 func Fetch() (Response, error) {
   var resp Response
   if r, err := http.Get(endpoint); err != nil {
@@ -26,4 +34,4 @@ func Fetch() (Response, error) {
   return resp, nil
 }
 
-// vim: ft=gotexttmpl
+{{- /* vim: ft=gotexttmpl */ -}}
