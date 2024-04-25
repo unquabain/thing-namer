@@ -2,39 +2,72 @@
 <html>
   <head>
     <meta content-type="text/html; charset=utf-8"/>
-    <title>Wizard Bacon</title>
+    <title>{{ .ProjectName }}</title>
     <meta property="og:title" content="Wizard Bacon"/>
     <meta property="og:type" content="website"/>
     <meta property="og:description" content="The Epic Project Namer"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Tenor+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Didact+Gothic&family=UnifrakturMaguntia&display=swap');
 * {
-  font-family: 'Tenor Sans', sans-serif;
+  font-family: "Didact Gothic", sans-serif;
 }
 body {
   background-color: {{ .Background }};
 }
-#wrapper {
-  max-width: 450px;
-  margin-left: auto;
-  margin-right: auto;
+
+@media (max-width: 500px) {
+  #wrapper {
+    width: calc(100% - 50px);
+  }
+  #links {
+    justify-content: flex-start;
+  }
 }
-#title {
-  padding-left: 20px;
-  padding-right: 20px;
-  margin-bottom: 1ex;
+
+@media (min-width: 501px) and (max-width: 800px) {
+  #wrapper {
+    margin-left: 50px;
+    margin-right: 50px;
+    width: calc(100% - 100px);
+  }
+  #links {
+    justify-content: space-between;
+  }
 }
-#title h1 {
-  color: {{ .Title }}
+
+@media (min-width: 801px) {
+  #wrapper {
+    max-width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #links {
+    justify-content: space-between;
+  }
 }
-#title h2 {
-  color: {{ .SubTitle }}
-}
+
 #content-outer {
   border-radius: 20px;
   background-color: {{ .ContentBackground }};
   box-shadow: 0 0 20px {{ .ContentShadow1 }}, 0 5px 5px {{ .ContentShadow2 }};
   padding: 20px;
+}
+
+#title {
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-top: 1em;
+  margin-bottom: 1ex;
+}
+#title h1 {
+  color: {{ .Title }};
+  font-size: xx-large;
+  font-family: "UnifrakturMaguntia", cursive;
+}
+#title h2 {
+  color: {{ .SubTitle }};
+  font-size: larger;
 }
 #intro {
   font-size: small;
@@ -47,12 +80,26 @@ body {
 #project-name {
   font-size: xx-large;
   font-weight: bold;
+  font-family: "Archivo Black", sans-serif;
   color: {{ .ProjectNameColor }};
 }
 a.btn,
 a.btn:active,
 a.btn:visited {
   color: {{ .OutroColor }};
+}
+#links {
+  margin-top: 20px;
+  font-size: xx-small;
+  display: flex;
+}
+a.link,
+a.link:active,
+a.link:visited {
+  color: {{ .SubTitle }};
+}
+a.link:hover {
+  color: {{ .Title }};
 }
 </style>
   </head>
@@ -69,6 +116,10 @@ a.btn:visited {
           <p id="outro">{{ .OutroText }}</p>
           <a class="btn" href="#" id="another">Another!</a>
         </div>
+      </div>
+      <div id="links">
+        <a class="link" href="/api.json">JSON API</a>
+        <a class="link" href="/wizardbacon.go">Go Client</a>
       </div>
     </div>
     <script type="text/javascript">
