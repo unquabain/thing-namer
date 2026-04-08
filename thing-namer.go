@@ -168,12 +168,7 @@ func (wf WordFile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func SameOriginMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(`Origin`) != `` && r.Header.Get(`Origin`) != fmt.Sprintf(`%s://%s`, r.URL.Scheme, r.Host) {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintln(w, `403 Forbidden`)
-			return
-		}
-		w.Header().Add(`Access-Control-Allow-Origin`, fmt.Sprintf(`%s://%s`, r.URL.Scheme, r.Host))
+		w.Header().Add(`Access-Control-Allow-Origin`, r.Header.Get(`Origin`))
 		next.ServeHTTP(w, r)
 	})
 }
