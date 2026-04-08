@@ -166,10 +166,22 @@ func (wf WordFile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func SameOriginMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get(`Origin`) != `` && r.Header.Get(`Origin`) != fmt.Sprintf(`%s://%s`, r.URL.Scheme, r.Host) {
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintln(w, `403 Forbidden`)
+			return
+		}
+		w.Header().Add(`Access-Control-Allow-Origin`, fmt.Sprintf(`%s://%s`, r.URL.Scheme, r.Host))
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	wf := make(WordFile)
 
 	yaml.Unmarshal(words, wf)
-	http.ListenAndServe(`:9099`, wf)
+	http.ListenAndServe(`:9099`, SameOriginMiddleware(wf))
 
 }
