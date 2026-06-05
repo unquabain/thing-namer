@@ -20,13 +20,13 @@ import (
 //go:embed data/words.yaml
 var words []byte
 
-//go:embed templates/index.html
+// Templates moved to internal/server. These stubs keep the legacy top-level
+// main package buildable until Task 8 deletes it.
 var indexRaw string
-var index = template.Must(template.New(`index`).Funcs(sprig.TxtFuncMap()).Parse(indexRaw))
+var index = template.Must(template.New(`index`).Funcs(sprig.TxtFuncMap()).Parse(`{{/* moved */}}`))
 
-//go:embed templates/client.go.tmpl
 var goRaw string
-var goTmplt = template.Must(template.New(`go`).Funcs(sprig.TxtFuncMap()).Parse(goRaw))
+var goTmplt = template.Must(template.New(`go`).Funcs(sprig.TxtFuncMap()).Parse(`{{/* moved */}}`))
 
 type RenderContext struct {
 	ProjectName       string `json:"projectName"`
