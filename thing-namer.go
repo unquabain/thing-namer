@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/Masterminds/sprig"
@@ -44,20 +45,6 @@ type RenderContext struct {
 
 var white, _ = colorful.Hex("#FFFFFF")
 var black, _ = colorful.Hex("#000000")
-
-var defaultContext = RenderContext{
-	Background:        `#EEEEEE`,
-	ContentBackground: `white`,
-	ContentShadow1:    `silver`,
-	ContentShadow2:    `silver`,
-	Title:             `black`,
-	SubTitle:          `black`,
-	IntroText:         `Your project is now called`,
-	IntroColor:        `black`,
-	OutroText:         `You're welcome!`,
-	OutroColor:        `black`,
-	ProjectNameColor:  `black`,
-}
 
 func createTheme(context *RenderContext) {
 	h, c, l := rand.Float64()*360, 0.3, 0.7
@@ -166,9 +153,36 @@ func (wf WordFile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SameOriginMiddleware(next http.Handler) http.Handler {
+func ReferrerCORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add(`Access-Control-Allow-Origin`, r.Header.Get(`Origin`))
+		if r.Method == http.MethodOptions {
+			origin := r.Header.Get(`Origin`)
+			if origin != `` {
+				w.Header().Set(`Access-Control-Allow-Origin`, origin)
+				w.Header().Set(`Access-Control-Allow-Methods`, `GET, OPTIONS`)
+				w.Header().Set(`Access-Control-Allow-Headers`, `Content-Type`)
+			}
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		referrer := r.Referer()
+		if referrer == `` {
+			w.Header().Add(`X-Error`, `missing referrer`)
+			next.ServeHTTP(w, r)
+			return
+		}
+		if !strings.HasPrefix(referrer, `http://`) && !strings.HasPrefix(referrer, `https://`) {
+			w.Header().Add(`X-Error`, fmt.Sprintf(`invalid referrer: %s`, referrer))
+			next.ServeHTTP(w, r)
+			return
+		}
+		rurl, err := url.Parse(referrer)
+		if err != nil {
+			w.Header().Add(`X-Error`, fmt.Sprintf(`invalid referrer: %s`, err.Error()))
+			next.ServeHTTP(w, r)
+			return
+		}
+		w.Header().Add(`Access-Control-Allow-Origin`, fmt.Sprintf(`%s://%s`, rurl.Scheme, rurl.Host))
 		next.ServeHTTP(w, r)
 	})
 }
@@ -177,6 +191,6 @@ func main() {
 	wf := make(WordFile)
 
 	yaml.Unmarshal(words, wf)
-	http.ListenAndServe(`:9099`, SameOriginMiddleware(wf))
+	http.ListenAndServe(`:9099`, ReferrerCORSMiddleware(wf))
 
 }

@@ -9,4 +9,5 @@ kubectl get deployment/thing-namer -oyaml \
 	| sed "s/image: unquabain\/projectnamer:.*/image: unquabain\/projectnamer:$version/g" \
 	> thing-namer.yaml
 kubectl apply -f thing-namer.yaml
-curl --verbose --header "Origin: http://localhost:8080" https://wizard-bacon.unquabain.com/api.json
+sleep 10
+curl --verbose --header "Referer: http://localhost:8080" https://wizard-bacon.unquabain.com/api.json
