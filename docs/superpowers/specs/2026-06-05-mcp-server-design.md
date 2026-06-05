@@ -134,11 +134,34 @@ n, err := namer.New(wordsYAML, namer.WithRand(r))  // fixed-seed for tests
 
 All randomness inside `namer` flows through this `*rand.Rand` — no calls to the package-level `math/rand` functions. Tests use a fixed seed for reproducibility.
 
+## Documentation
+
+`README.md` must be updated as part of this PR:
+
+1. Remove the stale CLI claims (`thing-namer` printing a name, `thing-namer -n 20`) — those don't reflect current behavior.
+2. Document the actual subcommands: bare `thing-namer` runs the web server on `:9099`; `thing-namer mcp` runs the stdio MCP server.
+3. Add a **"Using as an MCP server"** section with Claude Code setup for both transports:
+
+   **Stdio (local binary):**
+   ```bash
+   go install github.com/Unquabain/thing-namer@latest
+   claude mcp add thing-namer thing-namer mcp
+   ```
+
+   **HTTP (hosted instance):**
+   ```bash
+   claude mcp add --transport http thing-namer https://wizard-bacon.unquabain.com/mcp
+   ```
+
+   **Invocation from Claude Code:**
+   Once registered, the LLM can call the tools directly when asked something like _"suggest a project name"_ or _"give me 5 codename options for this project"_. The tools available are `suggest_name` and `suggest_names`.
+
+4. Briefly list the two tools and their parameters (mirroring the table in this spec).
+
 ## Out of scope (deferred)
 
 These are real issues but not part of this PR:
 - Issues #3 (`Vary: Origin`), #4 (empty-host Referer), #5 (OPTIONS swallowing), #6 (Add vs Set) — tracked separately.
-- README is currently stale (claims CLI behavior that doesn't exist). Worth a follow-up doc PR but not blocking.
 
 ## Acceptance criteria
 
@@ -147,3 +170,4 @@ These are real issues but not part of this PR:
 3. Both transports expose `suggest_name` and `suggest_names` with identical behavior.
 4. `go test ./...` passes with all the tests above.
 5. The existing Docker build and deployment still work.
+6. `README.md` reflects current behavior and documents Claude Code MCP setup for both transports.
