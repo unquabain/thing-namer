@@ -153,7 +153,7 @@ func (wf WordFile) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SameOriginMiddleware(next http.Handler) http.Handler {
+func ReferrerCORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		referrer := r.Referer()
 		if referrer == `` {
@@ -181,6 +181,6 @@ func main() {
 	wf := make(WordFile)
 
 	yaml.Unmarshal(words, wf)
-	http.ListenAndServe(`:9099`, SameOriginMiddleware(wf))
+	http.ListenAndServe(`:9099`, ReferrerCORSMiddleware(wf))
 
 }
