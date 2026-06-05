@@ -1,12 +1,12 @@
 module github.com/Unquabain/thing-namer
 
-go 1.21
+go 1.24.0
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/apex/log v1.9.0
 	github.com/lucasb-eyer/go-colorful v1.2.0
-	golang.org/x/text v0.13.0
+	golang.org/x/text v0.31.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -20,5 +20,5 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 )
