@@ -3,39 +3,69 @@ Names things like they're action movies from the mid 90s.
 
 ## Installing
 
-You know the drill.
-
 ```bash
-go get github.com/Unquabain/thing-namer
+go install github.com/Unquabain/thing-namer@latest
 ```
 
-## Building
-
-The only dependency not in the standard library is `gopkg.in/yaml/v2`, which is pretty standard.
+## Building from source
 
 ```bash
 go build
 ```
 
-You now have an executable called `thing-namer` or `thing-namer.exe` (depending on your system) in the current directory.
+You now have an executable called `thing-namer` (or `thing-namer.exe`) in the current directory.
 
 ## Running
+
+### Web server (default)
 
 ```bash
 thing-namer
 ```
 
-Prints 
+Starts an HTTP server on `:9099` that serves a rotating, themed project-name page. Routes:
 
-```
-Your project is now called "Wizard Bacon".
+- `GET /` — HTML page with a randomized color theme
+- `GET /api.json` — JSON `{ "projectName": ..., "intro": ..., "outro": ... }`
+- `GET /api.html` — Same as `/` but explicit
+- `GET /api.go` — A small Go client that calls `/api.json` at the current host
+- `POST /mcp` — Model Context Protocol streamable HTTP endpoint (see below)
+
+### Stdio MCP server
+
+```bash
+thing-namer mcp
 ```
 
-```
-thing-namer -n 20
+Speaks the Model Context Protocol over stdin/stdout. No HTTP listener is started.
+
+## Using as an MCP server
+
+`thing-namer` exposes its name generator as MCP tools so LLM clients can call it directly.
+
+### Tools
+
+| Tool | Parameters | Returns |
+|---|---|---|
+| `suggest_name` | _(none)_ | `{ "name": "Wizard Bacon" }` |
+| `suggest_names` | `count` (integer, 1–100, required) | `{ "names": ["Wizard Bacon", "Sparkle Dolphin", ...] }` |
+
+### Claude Code setup
+
+**Stdio (local binary):**
+
+```bash
+go install github.com/Unquabain/thing-namer@latest
+claude mcp add thing-namer thing-namer mcp
 ```
 
-Prints twenty different suggestions.
+**HTTP (hosted instance):**
+
+```bash
+claude mcp add --transport http thing-namer https://wizard-bacon.unquabain.com/mcp
+```
+
+Once registered, Claude Code can call the tools whenever you ask for project name suggestions — for example, _"suggest a project name"_ or _"give me 5 codename options for this project"_.
 
 ## History
 
