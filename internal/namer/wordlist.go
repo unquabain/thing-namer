@@ -3,6 +3,7 @@ package namer
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 
 	"github.com/apex/log"
 )
@@ -56,6 +57,11 @@ func (wl *WordList) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	for word, val := range m {
 		wl.WeightedWords = append(wl.WeightedWords, WeightedWord{Word: word, Weight: val})
 	}
+	// Sort so the internal order is independent of map iteration, which would
+	// otherwise leak non-determinism into seeded RNG output.
+	sort.Slice(wl.WeightedWords, func(i, j int) bool {
+		return wl.WeightedWords[i].Word < wl.WeightedWords[j].Word
+	})
 	return nil
 }
 
